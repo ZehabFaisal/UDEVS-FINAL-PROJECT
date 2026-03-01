@@ -5,19 +5,19 @@ import { FaMapLocationDot, FaPerson } from "react-icons/fa6";
 import { BiSolidData } from "react-icons/bi";
 import { NavLink } from 'react-router-dom';
 import { FaDollarSign } from "react-icons/fa";
-import Image1 from '../assets/Image1.jpg';
-import Image2 from '../assets/Image2.jpg';
-import Image3 from '../assets/Image3.jpg';
-import Image4 from '../assets/Image4.jpg';
-import Image5 from '../assets/Image5.jpg';
-import Image6 from '../assets/Image6.jpg';
-import Image7 from '../assets/Image7.jpg';
-import Image8 from '../assets/Image8.jpg';
-import Image9 from '../assets/Image9.jpg';
-import Image10 from '../assets/Image10.jpg';
-import Image11 from '../assets/Image11.jpg';
-import Image12 from '../assets/Image12.jpg';
-import Image13 from '../assets/Image13.jpg';
+import Image1 from '../../src/assets/Image1.jpg';
+import Image2 from '../../src/assets/Image2.jpg';
+import Image3 from '../../src/assets/Image3.jpg';
+import Image4 from '../../src/assets/Image4.jpg';
+import Image5 from '../../src/assets/Image5.jpg';
+import Image6 from '../../src/assets/Image6.jpg';
+import Image7 from '../../src/assets/Image7.jpg';
+import Image8 from '../../src/assets/Image8.jpg';
+import Image9 from '../../src/assets/Image9.jpg';
+import Image10 from '../../src/assets/Image10.jpg';
+import Image11 from '../../src/assets/Image11.jpg';
+import Image12 from '../../src/assets/Image12.jpg';
+import Image13 from '../../src/assets/Image13.jpg';
 
 export const jobsData = [
   {
