@@ -1,94 +1,61 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
 
 const Job = sequelize.define(
-  'Job',
+  "Job",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    title: {
-      type: DataTypes.STRING(150),
+    recruiter_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        len: [3, 150],
-      },
+      references: { model: "users", key: "id" },
     },
-    company: {
-      type: DataTypes.STRING(150),
+    title: {
+      type: DataTypes.STRING(200),
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     location: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(200),
       allowNull: false,
     },
     job_type: {
-      type: DataTypes.ENUM('Full-time', 'Part-time', 'Contract', 'Internship'),
+      type: DataTypes.ENUM("Full-time", "Part-time", "Contract", "Internship"),
       allowNull: false,
     },
     salary_min: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     salary_max: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.INTEGER,
       allowNull: true,
-    },
-    currency: {
-      type: DataTypes.STRING(5),
-      defaultValue: 'USD',
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
     requirements: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    benefits: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    skills: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    category: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.JSONB,
       allowNull: true,
+      defaultValue: [],
     },
     status: {
-      type: DataTypes.ENUM('active', 'closed', 'draft'),
-      defaultValue: 'draft',
-    },
-    posted_by: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.ENUM("active", "closed", "draft"),
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    application_count: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      defaultValue: "active",
     },
   },
   {
-    tableName: 'jobs',
-    timestamps: false,
+    tableName: "jobs",
   }
 );
 
-export default Job;
+module.exports = Job;

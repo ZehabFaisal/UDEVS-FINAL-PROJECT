@@ -1,14 +1,45 @@
-import express from 'express';
-import { submitApplication, getApplicationById, getCandidateApplications, 
-  updateApplicationStatus } from '../controllers/applicationController.js';
-import { authenticate, isCandidate, isRecruiter } from '../middleware/auth.js';
+const router = require("express").Router();
+const { body } = require("express-validator");
+const applicationController = require("../controllers/applicationController");
+const auth = require("../middleware/auth");
+const role = require("../middleware/role");
+const validate = require("../middleware/validate");
 
-const router = express.Router();
+router.get("/", auth, applicationController.getApplications);
 
-router.post('/:jobId', authenticate, isCandidate, submitApplication);
-router.get('/candidate/my-applications', authenticate, isCandidate, getCandidateApplications);
-router.patch('/:applicationId/status', authenticate, isRecruiter, updateApplicationStatus);
+router.post(
+  "/",
+  auth,
+  role("candidate"),
+  [body("job_id").isInt().withMessage("Valid job ID is required")],
+  validate,
+  applicationController.submitApplication
+);
 
-router.get('/:applicationId', authenticate, getApplicationById);
+router.put(
+  "/:id/status",
+  auth,
+  role("recruiter", "admin"),
+  [
+    body("status")
+      .isIn([
+        "new",
+        "under_review",
+        "interview_scheduled",
+        "rejected",
+        "hired",
+      ])
+      .withMessage("Invalid status"),
+  ],
+  validate,
+  applicationController.updateApplicationStatus
+);
 
-export default router;
+router.delete(
+  "/:id",
+  auth,
+  role("candidate", "admin"),
+  applicationController.deleteApplication
+);
+
+module.exports = router;

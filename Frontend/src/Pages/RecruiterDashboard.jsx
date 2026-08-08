@@ -1,1088 +1,838 @@
-// import React, { useState } from 'react';
-// import { Users, Calendar, Briefcase, TrendingUp, Search, X, Funnel, Brain, Check, Plus, 
-//     Edit, Trash2, Eye, BarChart3, Clock, MapPin, DollarSign } from 'lucide-react';
-// import { ToastContainer, toast } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
-
-// const RecruiterDashboard = () => {
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [filter, setFilter] = useState("All");
-//   const [showModal, setShowModal] = useState(false);
-//   const [selectedCandidate, setSelectedCandidate] = useState(null);
-//   const [aiModal, setAiModal] = useState(false);
-//   const [jobModal, setJobModal] = useState(false);
-//   const [analyticsModal, setAnalyticsModal] = useState(false);
-//   const [formData, setFormData] = useState({
-//     date: '', time: '', interviewer: '', location: ''
-//   });
-//   const [jobFormData, setJobFormData] = useState({
-//     title: '', description: '', requirements: '', salary: '', location: '', type: 'Full-time'
-//   });
-
-//   const stats = [
-//     { title: "Total Candidates", value: 156, icon: <Users size={22} />, bg: "bg-blue-100", color: "text-blue-600", change: "+12%", changeType: "positive" },
-//     { title: "Active Interviews", value: 23, icon: <Calendar size={22} />, bg: "bg-green-100", color: "text-green-600", change: "+5%", changeType: "positive" },
-//     { title: "Open Positions", value: 12, icon: <Briefcase size={22} />, bg: "bg-purple-100", color: "text-purple-600", change: "-2%", changeType: "negative" },
-//     { title: "Avg Match Score", value: "87%", icon: <TrendingUp size={22} />, bg: "bg-orange-100", color: "text-orange-600", change: "+3%", changeType: "positive" },
-//   ];
-
-//   const candidatesData = [
-//     { id: 1, name: "Ahmed Khan", role: "Frontend Developer", score: 92, status: "Interview Scheduled", skills: ["React Js", "TypeScript", "HTML", "CSS", "REST APIs"], appliedDate: "2024-01-15", experience: "3 years", location: "Karachi, PK", email: "ahmed.khan@gmail.com" },
-//     { id: 2, name: "Ahsan Ali", role: "Backend Developer", score: 88, status: "Under Review", skills: ["Node.js", "Python", "SQL", "Microservices", "REST APIs"], appliedDate: "2024-01-14", experience: "4 years", location: "Lahore, PK", email: "ahsan.ali@gmail.com" },
-//     { id: 3, name: "Omar Siddiqui", role: "Full Stack Developer", score: 90, status: "New", skills: ["Node.js", "React", "MongoDB", "PostgreSQL", "CI/CD"], appliedDate: "2024-01-13", experience: "5 years", location: "Islamabad, PK", email: "omar.siddiqui@gmail.com" },
-//     { id: 4, name: "Ayesha Malik", role: "DevOps Engineer", score: 87, status: "Interview Scheduled", skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"], appliedDate: "2024-01-12", experience: "3 years", location: "Remote", email: "ayesha.malik@gmail.com" },
-//     { id: 5, name: "Hassan Javed", role: "Data Scientist", score: 93, status: "Under Review", skills: ["Python", "Machine Learning", "SQL", "AI", "Statistics"], appliedDate: "2024-01-11", experience: "4 years", location: "Karachi, PK", email: "hassan.javed@gmail.com" },
-//     { id: 6, name: "Abdur Rahman", role: "Cybersecurity Analyst", score: 89, status: "New", skills: ["Network Security", "SIEM tools", "Penetration Testing", "Incident Response"], appliedDate: "2024-01-10", experience: "6 years", location: "Lahore, PK", email: "abdur.rahman@gmail.com" },
-//     { id: 7, name: "Yusuf Ahmed", role: "Cloud Engineer", score: 91, status: "Interview Scheduled", skills: ["AWS", "Azure", "GCP", "Docker", "Kubernetes"], appliedDate: "2024-01-09", experience: "4 years", location: "Remote", email: "yusuf.ahmed@gmail.com" },
-//     { id: 8, name: "Maryam Noor", role: "AI / ML Engineer", score: 94, status: "New", skills: ["Python", "TensorFlow", "PyTorch", "Deep Learning", "Model Deployment"], appliedDate: "2024-01-08", experience: "3 years", location: "Islamabad, PK", email: "maryam.noor@gmail.com" },
-//   ];
-
-//   const jobsData = [
-//     { id: 1, title: "Senior Frontend Developer", applicants: 45, status: "Active", postedDate: "2024-01-05", location: "Remote", salary: "$80k - $120k", type: "Full-time", views: 234 },
-//     { id: 2, title: "Backend Engineer", applicants: 32, status: "Active", postedDate: "2024-01-07", location: "New York", salary: "$90k - $130k", type: "Full-time", views: 189 },
-//     { id: 3, title: "Full Stack Developer", applicants: 28, status: "Active", postedDate: "2024-01-10", location: "San Francisco", salary: "$100k - $140k", type: "Full-time", views: 156 },
-//     { id: 4, title: "DevOps Engineer", applicants: 19, status: "Active", postedDate: "2024-01-12", location: "Remote", salary: "$95k - $125k", type: "Full-time", views: 98 },
-//   ];
-
-//   const recentActivities = [
-//     { id: 1, type: "interview", message: "Interview scheduled with Ahmed Khan", time: "2 hours ago", icon: <Calendar size={16} /> },
-//     { id: 2, type: "application", message: "New application received for Frontend Developer", time: "4 hours ago", icon: <Users size={16} /> },
-//     { id: 3, type: "job", message: "Job posting 'Backend Engineer' went live", time: "1 day ago", icon: <Briefcase size={16} /> },
-//     { id: 4, type: "analysis", message: "AI analysis completed for Omar Siddiqui", time: "2 days ago", icon: <Brain size={16} /> },
-//   ];
-
-//   const filteredCandidates = candidatesData.filter((c) => {
-//     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       c.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       c.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-
-//     const matchesStatus = filter === "All" || c.status === filter;
-//     return matchesSearch && matchesStatus;
-//   });
-
-//   const openModal = (candidate) => {
-//     setSelectedCandidate(candidate);
-//     setShowModal(true);
-//   };
-
-//   const closeModal = () => {
-//     setShowModal(false);
-//     setFormData({ date: '', time: '', interviewer: '', location: '' });
-//   };
-
-//   const openAiModal = (candidate) => {
-//     setSelectedCandidate(candidate);
-//     setAiModal(true);
-//   };
-
-//   const closeAiModal = () => {
-//     setAiModal(false);
-//   };
-
-//   const openJobModal = () => {
-//     setJobModal(true);
-//   };
-
-//   const closeJobModal = () => {
-//     setJobModal(false);
-//     setJobFormData({ title: '', description: '', requirements: '', salary: '', location: '', 
-//         type: 'Full-time' });
-//   };
-
-//   const openAnalyticsModal = () => {
-//     setAnalyticsModal(true);
-//   };
-
-//   const closeAnalyticsModal = () => {
-//     setAnalyticsModal(false);
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     toast.success(`Interview scheduled for ${selectedCandidate.name}!`);
-//     closeModal();
-//   };
-
-//   const handleJobSubmit = (e) => {
-//     e.preventDefault();
-//     toast.success('Job posted successfully!');
-//     closeJobModal();
-//   };
-
-//   const getStatusColor = (status) => {
-//     switch (status) {
-//       case 'Interview Scheduled': return 'bg-green-200 text-green-600';
-//       case 'Under Review': return 'bg-yellow-200 text-yellow-600';
-//       case 'Rejected': return 'bg-red-200 text-red-600';
-//       case 'New': return 'bg-blue-200 text-blue-600';
-//       default: return 'bg-gray-200 text-gray-600';
-//     }
-//   };
-
-//   const getActivityColor = (type) => {
-//     switch (type) {
-//       case 'interview': return 'text-green-600';
-//       case 'application': return 'text-blue-600';
-//       case 'job': return 'text-purple-600';
-//       case 'analysis': return 'text-orange-600';
-//       default: return 'text-gray-600';
-//     }
-//   };
-
-//   return (
-//     <div className='min-h-screen bg-gray-50 p-6 md:p-8'>
-//       <ToastContainer position="top-right" autoClose={3000} />
-
-//       <div className='max-w-7xl mx-auto mb-8'>
-//         <div className='flex justify-between items-center mb-6'>
-//           <div>
-//             <h1 className='text-3xl underline font-bold text-gray-800 mb-2 mt-15'>Welcome To Recruiter 
-//                 Dashboard</h1>
-//             <p className='text-gray-600'>Manage candidates, jobs, and interviews efficiently</p>
-//           </div>
-//           <div className='flex gap-3'>
-//             <button
-//               onClick={openAnalyticsModal}
-//               className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition
-//               cursor-pointer flex items-center gap-2'>
-//                 <BarChart3 size={20} /> Show Analytics
-//             </button>
-//           </div>
-//         </div>
-
-//         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-//           {stats.map((stat, index) => (
-//             <div key={index} className='bg-white rounded-xl shadow-sm p-6 flex justify-between items-center
-//                  cursor-pointer hover:shadow-lg transition'>
-//               <div>
-//                 <p className='text-gray-600 text-sm font-medium mb-1'>{stat.title}</p>
-//                 <h2 className="text-2xl font-bold text-gray-800">{stat.value}</h2>
-//                 <p className={`text-xs font-medium ${stat.changeType === 'positive' ? 'text-green-600' 
-//                     : 'text-red-600'}`}>
-//                   {stat.change} from last month
-//                 </p>
-//               </div>
-//               <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
-//                 {stat.icon}
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-
-//         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-//           <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-//             <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Recent Activities</h2>
-//             <div className='space-y-8 mt-10'>
-//               {
-//                 recentActivities.map((activity) => (
-//                     <div key={activity.id} className='flex items-start gap-3 p-3 rounded-lg
-//                         hover:bg-gray-50 transition'>
-//                     <div className={`p-2 rounded-full bg-gray-100 ${getActivityColor(activity.type)}`}>
-//                         {activity.icon}
-//                     </div>
-//                     <div className='flex-1'>
-//                         <p className='text-sm text-gray-800 font-medium'>{activity.message}</p>
-//                         <p className='text-xs text-gray-500 mt-1'>{activity.time}</p>
-//                     </div>
-//                     </div>
-//                 ))
-//               }
-//             </div>
-//           </div>
-
-//           <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-//             <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Active Job Postings</h2>
-//             <div className='space-y-4 mt-10'>
-//               {
-//                 jobsData.map((job) => (
-//                     <div key={job.id} className='border hover:bg-white rounded-lg p-4 hover:shadow-md transition'>
-//                         <div className='flex justify-between items-start mb-2'>
-//                             <h3 className='font-semibold text-gray-800 text-sm'>{job.title}</h3>
-//                             <span className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full'>
-//                                 Active</span>
-//                         </div>
-                        
-//                         <div className='text-xs text-gray-600 space-y-1 mb-3'>
-//                             <p className='flex items-center gap-1'><MapPin size={12} /> {job.location}</p>
-//                             <p className='flex items-center gap-1'><DollarSign size={12} /> {job.salary}</p>
-//                             <p className='flex items-center gap-1'><Eye size={12} /> {job.views} views</p>
-//                         </div>
-//                         <div className='flex justify-between items-center'>
-//                             <span className='text-xs text-gray-500'>{job.applicants} applicants</span>
-//                         </div>
-//                     </div>
-//                 ))
-//               }
-//             </div>
-//           </div>
-
-//           <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-//             <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Quick Actions</h2>
-//             <div className='space-y-8 mt-10'>
-//               <button className='w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition text-left flex items-center gap-3'>
-//                 <Users size={18} />
-//                 <span className='text-sm font-medium'>Bulk Import Candidates</span>
-//               </button>
-//               <button className='w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition text-left flex items-center gap-3'>
-//                 <Calendar size={18} />
-//                 <span className='text-sm font-medium'>Schedule Interviews</span>
-//               </button>
-//               <button className='w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition text-left flex items-center gap-3'>
-//                 <BarChart3 size={18} />
-//                 <span className='text-sm font-medium'>Generate Reports</span>
-//               </button>
-//               <button className='w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition text-left flex items-center gap-3'>
-//                 <Brain size={18} />
-//                 <span className='text-sm font-medium'>AI Insights</span>
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className='bg-white rounded-xl shadow-sm p-6 mt-8'>
-//           <div className='flex justify-between items-center mb-6'>
-//             <h2 className='text-2xl font-bold text-gray-800 underline'>Candidate Management</h2>
-//             <div className='flex gap-4'>
-//                 <select value={filter} onChange={(e) => setFilter(e.target.value)} className='border rounded-lg 
-//                     px-3 py-2 text-sm '>
-//                     <option value="All">All Status</option>
-//                     <option value="New">New</option>
-//                     <option value="Under Review">Under Review</option>
-//                     <option value="Interview Scheduled">Interview Scheduled</option>
-//                     <option value="Rejected">Rejected</option>
-//                 </select>
-//             </div>
-//           </div>
-
-//           <div className='relative mb-6'>
-//             <Search size={18} className='absolute top-3 left-3 text-gray-500' />
-//             <input type="text" placeholder="Search candidates by name, position, or skills..."
-//               className='w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none 
-//               focus:ring-2 focus:ring-blue-500 focus:border-none'
-//               value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-//             />
-//           </div>
-
-//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-//             {filteredCandidates.length > 0 ? filteredCandidates.map((candidate) => (
-//               <div key={candidate.id} className="bg-gray-50 rounded-xl shadow-sm p-6 hover:shadow-lg transition">
-//                 <div className="flex justify-between items-start mb-4">
-//                   <div>
-//                     <h3 className="font-bold text-gray-800 text-xl mb-1">{candidate.name}</h3>
-//                     <p className="text-sm font-medium text-gray-600 mb-2">{candidate.role}</p>
-//                     <span className={`inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold ${getStatusColor(candidate.status)}`}>
-//                       {candidate.status}
-//                     </span>
-//                   </div>
-//                   <div className="text-right">
-//                     <div className="text-2xl font-bold text-blue-600">{candidate.score}%</div>
-//                     <div className="text-xs text-gray-500">Match Score</div>
-//                   </div>
-//                 </div>
-
-//                 <div className="mb-4">
-//                   <div className="w-full bg-gray-200 h-2 rounded-full">
-//                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${candidate.score}%` }}></div>
-//                   </div>
-//                 </div>
-
-//                 <div className="mb-4">
-//                   <p className="font-medium text-gray-700 mb-2">Key Skills:</p>
-//                   <div className="flex flex-wrap gap-2">
-//                     {candidate.skills.slice(0, 3).map((skill, index) => (
-//                       <span key={index} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-//                         {skill}
-//                       </span>
-//                     ))}
-//                     {candidate.skills.length > 3 && (
-//                       <span className="text-xs text-gray-500">+{candidate.skills.length - 3} more</span>
-//                     )}
-//                   </div>
-//                 </div>
-
-//                 <div className="text-xs text-gray-500 mb-4 space-y-1">
-//                   <p> {candidate.email}</p>
-//                   <p> {candidate.location}</p>
-//                   <p> {candidate.experience}</p>
-//                   <p> Applied: {candidate.appliedDate}</p>
-//                 </div>
-
-//                 <div className="flex gap-2">
-//                   <button
-//                     onClick={() => openModal(candidate)}
-//                     className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-//                   >
-//                     Schedule Interview
-//                   </button>
-//                   <button
-//                     onClick={() => openAiModal(candidate)}
-//                     className="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-700 hover:text-white transition text-sm font-medium"
-//                   >
-//                     AI Analysis
-//                   </button>
-//                 </div>
-//               </div>
-//             )) : (
-//               <div className="col-span-full text-center py-12">
-//                 <div className="text-gray-400 mb-4">
-//                   <Users size={48} className="mx-auto" />
-//                 </div>
-//                 <h3 className="text-lg font-medium text-gray-600 mb-2">No candidates found</h3>
-//                 <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-
-//       {showModal && selectedCandidate && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//           <div className="bg-white rounded-xl p-6 w-full max-w-md">
-//             <div className="flex justify-between items-center mb-4">
-//               <h2 className="text-xl font-bold">Schedule Interview</h2>
-//               <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-//                 <X size={24} />
-//               </button>
-//             </div>
-
-//             <div className="mb-4">
-//               <h3 className="font-semibold text-gray-800">{selectedCandidate.name}</h3>
-//               <p className="text-sm text-gray-600">{selectedCandidate.role}</p>
-//             </div>
-
-//             <form onSubmit={handleSubmit} className="space-y-4">
-//               <div>
-//                 <label className="block text-sm font-medium mb-1">Date</label>
-//                 <input
-//                   type="date"
-//                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   required
-//                   value={formData.date}
-//                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-sm font-medium mb-1">Time</label>
-//                 <input
-//                   type="time"
-//                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   required
-//                   value={formData.time}
-//                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-sm font-medium mb-1">Interviewer</label>
-//                 <input
-//                   type="text"
-//                   placeholder="Enter interviewer name"
-//                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   required
-//                   value={formData.interviewer}
-//                   onChange={(e) => setFormData({ ...formData, interviewer: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-sm font-medium mb-1">Location</label>
-//                 <select
-//                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                   required
-//                   value={formData.location}
-//                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-//                 >
-//                   <option value="">Select location</option>
-//                   <option value="Google Meet">Google Meet</option>
-//                   <option value="Zoom">Zoom</option>
-//                   <option value="Microsoft Teams">Microsoft Teams</option>
-//                   <option value="Office">Office</option>
-//                   <option value="Phone">Phone</option>
-//                 </select>
-//               </div>
-//               <button
-//                 type="submit"
-//                 className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium"
-//               >
-//                 Schedule Interview
-//               </button>
-//             </form>
-//           </div>
-//         </div>
-//       )}
-      
-//       {aiModal && selectedCandidate && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//           <div className="bg-white w-full max-w-2xl rounded-xl shadow-xl">
-//             <div className="flex justify-between items-center p-6 border-b">
-//               <div className="flex items-center gap-3">
-//                 <div className="bg-blue-100 p-3 rounded-full">
-//                   <Brain className="text-blue-600" size={24} />
-//                 </div>
-//                 <div>
-//                   <h2 className="text-2xl font-bold">AI Analysis</h2>
-//                   <p className="text-gray-600">{selectedCandidate.name}</p>
-//                 </div>
-//               </div>
-//               <button onClick={closeAiModal} className="text-gray-500 hover:text-gray-700">
-//                 <X size={24} />
-//               </button>
-//             </div>
-
-//             <div className="p-6">
-//               <div className="bg-gray-50 rounded-xl p-6 mb-6">
-//                 <h3 className="font-semibold mb-3">Overall Match Score</h3>
-//                 <div className="flex items-center gap-4">
-//                   <span className="text-4xl font-bold text-blue-600">{selectedCandidate.score}%</span>
-//                   <div className="flex-1 bg-gray-200 h-3 rounded-full">
-//                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full" style={{ width: `${selectedCandidate.score}%` }}></div>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               <div className="mb-6">
-//                 <h3 className="font-semibold mb-3">Key Strengths</h3>
-//                 <ul className="space-y-2">
-//                   {selectedCandidate.skills.slice(0, 4).map((skill, index) => (
-//                     <li key={index} className="flex items-start gap-2">
-//                       <Check className="text-green-600 mt-0.5" size={16} />
-//                       <span className="text-gray-700">Strong expertise in {skill}</span>
-//                     </li>
-//                   ))}
-//                 </ul>
-//               </div>
-
-//               <div className="mb-6">
-//                 <h3 className="font-semibold mb-3">Development Areas</h3>
-//                 <ul className="space-y-2">
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-orange-500 font-bold">•</span>
-//                     Could benefit from additional enterprise-level experience
-//                   </li>
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-orange-500 font-bold">•</span>
-//                     Limited exposure to large-scale distributed systems
-//                   </li>
-//                 </ul>
-//               </div>
-
-//               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-//                 <h3 className="font-semibold mb-1 text-green-800">Recommendation</h3>
-//                 <p className="text-green-700 font-medium">Highly Recommended for {selectedCandidate.role} position</p>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-
-//       {analyticsModal && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//           <div className="bg-white rounded-xl p-6 w-full max-w-4xl">
-//             <div className="flex justify-between items-center mb-6">
-//               <h2 className="text-2xl font-bold">Recruitment Analytics</h2>
-//               <button onClick={closeAnalyticsModal} className="text-gray-500 hover:text-gray-700">
-//                 <X size={24} />
-//               </button>
-//             </div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-//               <div className="bg-blue-50 p-6 rounded-xl">
-//                 <h3 className="font-semibold text-blue-800 mb-2">Application Trends</h3>
-//                 <div className="text-3xl font-bold text-blue-600 mb-2">+24%</div>
-//                 <p className="text-sm text-blue-700">Increase in applications this month</p>
-//               </div>
-              
-//               <div className="bg-green-50 p-6 rounded-xl">
-//                 <h3 className="font-semibold text-green-800 mb-2">Interview Success Rate</h3>
-//                 <div className="text-3xl font-bold text-green-600 mb-2">78%</div>
-//                 <p className="text-sm text-green-700">Candidates proceeding to next round</p>
-//               </div>
-              
-//               <div className="bg-purple-50 p-6 rounded-xl">
-//                 <h3 className="font-semibold text-purple-800 mb-2">Time to Hire</h3>
-//                 <div className="text-3xl font-bold text-purple-600 mb-2">18 days</div>
-//                 <p className="text-sm text-purple-700">Average time from application to offer</p>
-//               </div>
-              
-//                 <div className="bg-orange-50 p-6 rounded-xl">
-//                     <h3 className="font-semibold text-orange-800 mb-2">Top Skills</h3>
-//                     <div className="space-y-2">
-//                     <div className="flex justify-between">
-//                         <span className="text-sm">React</span>
-//                         <span className="text-sm font-semibold">85%</span>
-//                     </div>
-                    
-//                     <div className="flex justify-between">
-//                         <span className="text-sm">Python</span>
-//                         <span className="text-sm font-semibold">72%</span>
-//                     </div>
-                    
-//                     <div className="flex justify-between">
-//                         <span className="text-sm">AWS</span>
-//                         <span className="text-sm font-semibold">68%</span>
-//                     </div>
-//                     </div>
-//                 </div>
-
-//               <div className="bg-red-50 p-6 rounded-xl">
-//                 <h3 className="font-semibold text-red-800 mb-2">Rejection Rate</h3>
-//                 <div className="text-3xl font-bold text-red-600 mb-2">32%</div>
-//                 <p className="text-sm text-red-700">Applications not meeting criteria</p>
-//               </div>
-
-//               <div className="bg-indigo-50 p-6 rounded-xl">
-//                 <h3 className="font-semibold text-indigo-800 mb-2">Diversity Score</h3>
-//                 <div className="text-3xl font-bold text-indigo-600 mb-2">8.5/10</div>
-//                 <p className="text-sm text-indigo-700">Candidate pool diversity rating</p>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default RecruiterDashboard;
-
-
-import React, { useState } from 'react';
-import { Users, Calendar, Briefcase, TrendingUp, Search, X, Funnel, Brain, Check, Plus, 
-    Edit, Trash2, Eye, BarChart3, Clock, MapPin, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Calendar, Briefcase, TrendingUp, Search, X, Funnel, Brain, Check, BarChart3, Plus, Edit3, Trash2, MapPin, Clock, FileText, FileCheck, Eye } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchApplications } from '../store/slices/applicationsSlice';
+import { fetchInterviews, scheduleInterview } from '../store/slices/interviewsSlice';
+import { fetchJobs, createJob, deleteJob } from '../store/slices/jobsSlice';
 
 const RecruiterDashboard = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("All");
-  const [showModal, setShowModal] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [aiModal, setAiModal] = useState(false);
-  const [jobModal, setJobModal] = useState(false);
-  const [analyticsModal, setAnalyticsModal] = useState(false);
-  const [formData, setFormData] = useState({
-    date: '', time: '', interviewer: '', location: ''
+  const dispatch = useDispatch();
+  const { applications, loading: appsLoading } = useSelector((state) => state.applications);
+  const { interviews, loading: interviewsLoading } = useSelector((state) => state.interviews);
+  const { jobs, loading: jobsLoading } = useSelector((state) => state.jobs);
+  const { user } = useSelector((state) => state.auth);
+
+  const [activeTab, setActiveTab] = useState('candidates');
+  const [searchTerm, set_SearchTerm] = useState('');
+  const [filter, set_Filter] = useState('All');
+  const [showModal, set_ShowModal] = useState(false);
+  const [selected_Candidate, set_selected_Candidate] = useState(null);
+  const [Ai_Modal, set_Ai_Modal] = useState(false);
+  const [Analytics_Modal, set_Analytics_Modal] = useState(false);
+  const [formData, set_FormData] = useState({ date: '', time: '', location: '' });
+
+  const [showJobModal, set_ShowJobModal] = useState(false);
+  const [jobFormData, set_JobFormData] = useState({
+    title: '', category: 'Engineering', location: '', job_type: 'Full-time',
+    salary_min: '', salary_max: '', description: '', requirements: '',
   });
-  const [jobFormData, setJobFormData] = useState({
-    title: '', description: '', requirements: '', salary: '', location: '', type: 'Full-time'
-  });
+  const [selectedJobForCVs, set_SelectedJobForCVs] = useState(null);
+  const recruiterJobs = jobs.filter((j) => j.recruiter?.id === user?.id);
 
-  const stats = [
-    { title: "Total Candidates", value: 156, icon: <Users size={22} />, bg: "bg-blue-100", color: "text-blue-600", change: "+12%", changeType: "positive" },
-    { title: "Active Interviews", value: 23, icon: <Calendar size={22} />, bg: "bg-green-100", color: "text-green-600", change: "+5%", changeType: "positive" },
-    { title: "Open Positions", value: 12, icon: <Briefcase size={22} />, bg: "bg-purple-100", color: "text-purple-600", change: "-2%", changeType: "negative" },
-    { title: "Avg Match Score", value: "87%", icon: <TrendingUp size={22} />, bg: "bg-orange-100", color: "text-orange-600", change: "+3%", changeType: "positive" },
-  ];
+  useEffect(() => {
+    dispatch(fetchApplications());
+    dispatch(fetchInterviews());
+    dispatch(fetchJobs());
+  }, [dispatch]);
 
-  const candidatesData = [
-    { id: 1, name: "Ahmed Khan", role: "Frontend Developer", score: 92, status: "Interview Scheduled", skills: ["React Js", "TypeScript", "HTML", "CSS", "REST APIs"], appliedDate: "2024-01-15", experience: "3 years", location: "Karachi, PK", email: "ahmed.khan@gmail.com" },
-    { id: 2, name: "Ahsan Ali", role: "Backend Developer", score: 88, status: "Under Review", skills: ["Node.js", "Python", "SQL", "Microservices", "REST APIs"], appliedDate: "2024-01-14", experience: "4 years", location: "Lahore, PK", email: "ahsan.ali@gmail.com" },
-    { id: 3, name: "Omar Siddiqui", role: "Full Stack Developer", score: 90, status: "New", skills: ["Node.js", "React", "MongoDB", "PostgreSQL", "CI/CD"], appliedDate: "2024-01-13", experience: "5 years", location: "Islamabad, PK", email: "omar.siddiqui@gmail.com" },
-    { id: 4, name: "Ayesha Malik", role: "DevOps Engineer", score: 87, status: "Interview Scheduled", skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"], appliedDate: "2024-01-12", experience: "3 years", location: "Remote", email: "ayesha.malik@gmail.com" },
-    { id: 5, name: "Hassan Javed", role: "Data Scientist", score: 93, status: "Under Review", skills: ["Python", "Machine Learning", "SQL", "AI", "Statistics"], appliedDate: "2024-01-11", experience: "4 years", location: "Karachi, PK", email: "hassan.javed@gmail.com" },
-    { id: 6, name: "Abdur Rahman", role: "Cybersecurity Analyst", score: 89, status: "New", skills: ["Network Security", "SIEM tools", "Penetration Testing", "Incident Response"], appliedDate: "2024-01-10", experience: "6 years", location: "Lahore, PK", email: "abdur.rahman@gmail.com" },
-    { id: 7, name: "Yusuf Ahmed", role: "Cloud Engineer", score: 91, status: "Interview Scheduled", skills: ["AWS", "Azure", "GCP", "Docker", "Kubernetes"], appliedDate: "2024-01-09", experience: "4 years", location: "Remote", email: "yusuf.ahmed@gmail.com" },
-    { id: 8, name: "Maryam Noor", role: "AI / ML Engineer", score: 94, status: "New", skills: ["Python", "TensorFlow", "PyTorch", "Deep Learning", "Model Deployment"], appliedDate: "2024-01-08", experience: "3 years", location: "Islamabad, PK", email: "maryam.noor@gmail.com" },
-  ];
+  const getStatusLabel = (status) => {
+    const map = {
+      new: 'New', under_review: 'Under Review', interview_scheduled: 'Interview Scheduled',
+      rejected: 'Rejected', hired: 'Hired',
+    };
+    return map[status] || status;
+  };
 
-  const jobsData = [
-    { id: 1, title: "Senior Frontend Developer", applicants: 45, status: "Active", postedDate: "2024-01-05", location: "Remote", salary: "$80k - $120k", type: "Full-time", views: 234 },
-    { id: 2, title: "Backend Engineer", applicants: 32, status: "Active", postedDate: "2024-01-07", location: "New York", salary: "$90k - $130k", type: "Full-time", views: 189 },
-    { id: 3, title: "Full Stack Developer", applicants: 28, status: "Active", postedDate: "2024-01-10", location: "San Francisco", salary: "$100k - $140k", type: "Full-time", views: 156 },
-    { id: 4, title: "DevOps Engineer", applicants: 19, status: "Active", postedDate: "2024-01-12", location: "Remote", salary: "$95k - $125k", type: "Full-time", views: 98 },
-  ];
+  const getStatusColors = (status) => {
+    const colors = {
+      'Interview Scheduled': { bg: 'bg-green-200', text: 'text-green-600' },
+      'Under Review': { bg: 'bg-yellow-200', text: 'text-yellow-600' },
+      'Rejected': { bg: 'bg-red-200', text: 'text-red-600' },
+      'New': { bg: 'bg-blue-200', text: 'text-blue-600' },
+      'Hired': { bg: 'bg-emerald-200', text: 'text-emerald-600' },
+    };
+    return colors[status] || { bg: 'bg-gray-200', text: 'text-gray-600' };
+  };
 
-  const recentActivities = [
-    { id: 1, type: "interview", message: "Interview scheduled with Ahmed Khan", time: "2 hours ago", icon: <Calendar size={16} /> },
-    { id: 2, type: "application", message: "New application received for Frontend Developer", time: "4 hours ago", icon: <Users size={16} /> },
-    { id: 3, type: "job", message: "Job posting 'Backend Engineer' went live", time: "1 day ago", icon: <Briefcase size={16} /> },
-    { id: 4, type: "analysis", message: "AI analysis completed for Omar Siddiqui", time: "2 days ago", icon: <Brain size={16} /> },
-  ];
+  const candidatesData = applications.map((app) => ({
+    ...app,
+    name: app.name || app.candidate?.name || 'Unknown',
+    role: app.role || app.job?.title || 'N/A',
+    score: app.ai_score || 0,
+    status: getStatusLabel(app.status),
+    skills: app.ai_analysis?.strengths || ['N/A'],
+    email: app.email || app.candidate?.email || 'N/A',
+    appliedDate: app.created_at || app.appliedDate || '',
+  }));
 
-  const filteredCandidates = candidatesData.filter((c) => {
-    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filtered_Candidates = candidatesData.filter((c) => {
+    const matchesSearch =
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesStatus = filter === "All" || c.status === filter;
+      (c.skills && c.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase())));
+    const matchesStatus = filter === 'All' || c.status === filter;
     return matchesSearch && matchesStatus;
   });
 
+  const avgScore =
+    applications.length > 0
+      ? Math.round(applications.reduce((sum, a) => sum + (a.ai_score || 0), 0) / applications.length)
+      : 0;
+
+  const stats = [
+    { title: 'Total Candidates', value: candidatesData.length, icon: <Users size={22} />, bg: 'bg-blue-100', color: 'text-blue-600' },
+    { title: 'Active Interviews', value: interviews.length, icon: <Calendar size={22} />, bg: 'bg-green-100', color: 'text-green-600' },
+    { title: 'Open Positions', value: recruiterJobs.length, icon: <Briefcase size={22} />, bg: 'bg-purple-100', color: 'text-purple-600' },
+    { title: 'Avg Match Score', value: `${avgScore}%`, icon: <TrendingUp size={22} />, bg: 'bg-orange-100', color: 'text-orange-600' },
+  ];
+
+  const statusFilters = ['All', 'New', 'Under Review', 'Interview Scheduled', 'Rejected', 'Hired'];
+
   const openModal = (candidate) => {
-    setSelectedCandidate(candidate);
-    setShowModal(true);
+    set_selected_Candidate(candidate);
+    set_ShowModal(true);
   };
 
   const closeModal = () => {
-    setShowModal(false);
-    setFormData({ date: '', time: '', interviewer: '', location: '' });
+    set_ShowModal(false);
+    set_FormData({ date: '', time: '', location: '' });
   };
 
-  const openAiModal = (candidate) => {
-    setSelectedCandidate(candidate);
-    setAiModal(true);
+  const open_Ai_Model = (candidate) => {
+    set_selected_Candidate(candidate);
+    set_Ai_Modal(true);
   };
 
-  const closeAiModal = () => {
-    setAiModal(false);
-  };
+  const close_Ai_Model = () => set_Ai_Modal(false);
+  const open_Analytics_Model = () => set_Analytics_Modal(true);
+  const close_Analytics_Model = () => set_Analytics_Modal(false);
 
-  const openJobModal = () => {
-    setJobModal(true);
-  };
-
-  const closeJobModal = () => {
-    setJobModal(false);
-    setJobFormData({ title: '', description: '', requirements: '', salary: '', location: '', 
-        type: 'Full-time' });
-  };
-
-  const openAnalyticsModal = () => {
-    setAnalyticsModal(true);
-  };
-
-  const closeAnalyticsModal = () => {
-    setAnalyticsModal(false);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success(`Interview scheduled for ${selectedCandidate.name}!`);
-    closeModal();
-  };
-
-  const handleJobSubmit = (e) => {
-    e.preventDefault();
-    toast.success('Job posted successfully!');
-    closeJobModal();
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Interview Scheduled': return 'bg-green-200 text-green-600';
-      case 'Under Review': return 'bg-yellow-200 text-yellow-600';
-      case 'Rejected': return 'bg-red-200 text-red-600';
-      case 'New': return 'bg-blue-200 text-blue-600';
-      default: return 'bg-gray-200 text-gray-600';
+    if (!selected_Candidate?.id) {
+      toast.error('No application selected');
+      return;
+    }
+    try {
+      await dispatch(
+        scheduleInterview({
+          application_id: selected_Candidate.id,
+          date: formData.date,
+          time: formData.time,
+          location: formData.location || 'Google Meet',
+          type: 'Video-Call',
+        })
+      ).unwrap();
+      toast.success(`Interview scheduled for ${selected_Candidate.name}!`);
+      dispatch(fetchApplications());
+      dispatch(fetchInterviews());
+      closeModal();
+    } catch (err) {
+      toast.error(err || 'Failed to schedule interview');
     }
   };
 
-  const getActivityColor = (type) => {
-    switch (type) {
-      case 'interview': return 'text-green-600';
-      case 'application': return 'text-blue-600';
-      case 'job': return 'text-purple-600';
-      case 'analysis': return 'text-orange-600';
-      default: return 'text-gray-600';
+  const handleCreateJob = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...jobFormData,
+        salary_min: jobFormData.salary_min ? parseInt(jobFormData.salary_min) : undefined,
+        salary_max: jobFormData.salary_max ? parseInt(jobFormData.salary_max) : undefined,
+        requirements: jobFormData.requirements
+          ? jobFormData.requirements.split(',').map((r) => r.trim()).filter(Boolean)
+          : [],
+      };
+      await dispatch(createJob(payload)).unwrap();
+      toast.success('Job created successfully!');
+      set_ShowJobModal(false);
+      set_JobFormData({
+        title: '', category: 'Engineering', location: '', job_type: 'Full-time',
+        salary_min: '', salary_max: '', description: '', requirements: '',
+      });
+    } catch (err) {
+      toast.error(err || 'Failed to create job');
     }
   };
+
+  const handleDeleteJob = async (jobId, jobTitle) => {
+    if (!window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) return;
+    try {
+      await dispatch(deleteJob(jobId)).unwrap();
+      toast.success('Job deleted successfully!');
+    } catch (err) {
+      toast.error(err || 'Failed to delete job');
+    }
+  };
+
+  if (appsLoading || interviewsLoading || jobsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-300 p-6 md:p-8 flex items-center justify-center">
+        <p className="text-blue-600 text-xl">Loading dashboard data...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className='min-h-screen bg-gray-50 p-6 md:p-8'>
+    <div className="min-h-screen bg-gray-300 p-6 md:p-8">
       <ToastContainer position="top-right" autoClose={3000} />
-
-      <div className='max-w-7xl mx-auto mb-8'>
-        <div className='flex justify-between items-center mb-6'>
-          <div>
-            <h1 className='text-3xl underline font-bold text-gray-800 mb-2 mt-15'>Welcome To Recruiter 
-                Dashboard</h1>
-            <p className='text-gray-600'>Manage candidates, jobs, and interviews efficiently</p>
-          </div>
-          <div className='flex gap-3'>
-            <button
-              onClick={openAnalyticsModal}
-              className='bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition
-              cursor-pointer flex items-center gap-2'>
-                <BarChart3 size={20} /> Show Analytics
-            </button>
-          </div>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-          {stats.map((stat, index) => (
-            <div key={index} className='bg-white rounded-xl shadow-sm p-6 flex justify-between items-center
-                 cursor-pointer hover:shadow-lg transition'>
+      <div className="max-w-7xl mx-auto mt-15">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
+          {stats.map((s, index) => (
+            <div key={index} className="bg-white rounded-3xl shadow-sm p-5 flex justify-between items-center cursor-pointer hover:shadow-2xl">
               <div>
-                <p className='text-gray-600 text-sm font-medium mb-1'>{stat.title}</p>
-                <h2 className="text-2xl font-bold text-gray-800">{stat.value}</h2>
-                <p className={`text-xs font-medium ${stat.changeType === 'positive' ? 'text-green-600' 
-                    : 'text-red-600'}`}>
-                  {stat.change} from last month
-                </p>
+                <p className="text-black text-2xl font-bold underline"> {s.title} </p>
+                <h2 className="text-xl font-semibold text-black mt-1"> {s.value} </h2>
               </div>
-              <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
-                {stat.icon}
-              </div>
+              <div className={`p-3 rounded-lg ${s.bg} ${s.color}`}> {s.icon} </div>
             </div>
           ))}
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-          <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-            <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Recent Activities</h2>
-            <div className='space-y-8 mt-10'>
-              {
-                recentActivities.map((activity) => (
-                    <div key={activity.id} className='flex items-start gap-3 p-3 rounded-lg
-                        hover:bg-gray-50 transition'>
-                    <div className={`p-2 rounded-full bg-gray-100 ${getActivityColor(activity.type)}`}>
-                        {activity.icon}
-                    </div>
-                    <div className='flex-1'>
-                        <p className='text-sm text-gray-800 font-medium'>{activity.message}</p>
-                        <p className='text-xs text-gray-500 mt-1'>{activity.time}</p>
-                    </div>
-                    </div>
-                ))
-              }
-            </div>
-          </div>
-
-          <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-            <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Active Job Postings</h2>
-            <div className='space-y-4 mt-10'>
-              {
-                jobsData.map((job) => (
-                    <div key={job.id} className='border hover:bg-white rounded-lg p-4 hover:shadow-md transition'>
-                        <div className='flex justify-between items-start mb-2'>
-                            <h3 className='font-semibold text-gray-800 text-sm'>{job.title}</h3>
-                            <span className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full'>
-                                Active</span>
-                        </div>
-                        
-                        <div className='text-xs text-gray-600 space-y-1 mb-3'>
-                            <p className='flex items-center gap-1'><MapPin size={12} /> {job.location}</p>
-                            <p className='flex items-center gap-1'><DollarSign size={12} /> {job.salary}</p>
-                            <p className='flex items-center gap-1'><Eye size={12} /> {job.views} views</p>
-                        </div>
-                        <div className='flex justify-between items-center'>
-                            <span className='text-xs text-gray-500'>{job.applicants} applicants</span>
-                        </div>
-                    </div>
-                ))
-              }
-            </div>
-          </div>
-
-          <div className='bg-gray-300 rounded-xl shadow-sm p-6'>
-            <h2 className='text-2xl font-bold text-gray-800 mb-4 underline'>Quick Actions</h2>
-            <div className='space-y-8 mt-10'>
-              <button className='w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition text-left flex items-center gap-3'>
-                <Users size={18} />
-                <span className='text-sm font-medium'>Bulk Import Candidates</span>
-              </button>
-              <button className='w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition text-left flex items-center gap-3'>
-                <Calendar size={18} />
-                <span className='text-sm font-medium'>Schedule Interviews</span>
-              </button>
-              <button className='w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition text-left flex items-center gap-3'>
-                <BarChart3 size={18} />
-                <span className='text-sm font-medium'>Generate Reports</span>
-              </button>
-              <button className='w-full bg-orange-600 text-white py-3 px-4 rounded-lg hover:bg-orange-700 transition text-left flex items-center gap-3'>
-                <Brain size={18} />
-                <span className='text-sm font-medium'>AI Insights</span>
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-wrap gap-3 mt-6 border-b-2 border-gray-400 pb-2">
+          {[
+            { key: 'candidates', label: 'Candidates', icon: <Users size={18} /> },
+            { key: 'jobs', label: 'My Jobs', icon: <Briefcase size={18} /> },
+            { key: 'interviews', label: 'Interviews', icon: <Calendar size={18} /> },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); set_SearchTerm(''); }}
+              className={`flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-sm cursor-pointer transition ${
+                activeTab === tab.key
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+          <div className="flex-1" />
+          <button
+            onClick={open_Analytics_Model}
+            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition cursor-pointer text-sm font-semibold"
+          >
+            <BarChart3 size={18} />
+            Analytics
+          </button>
         </div>
 
-        <div className='bg-white rounded-xl shadow-sm p-6 mt-8'>
-          <div className='flex justify-between items-center mb-6'>
-            <h2 className='text-2xl font-bold text-gray-800 underline'>Candidate Management</h2>
-            <div className='flex gap-4'>
-                <select value={filter} onChange={(e) => setFilter(e.target.value)} className='border rounded-lg 
-                    px-3 py-2 text-sm '>
-                    <option value="All">All Status</option>
-                    <option value="New">New</option>
-                    <option value="Under Review">Under Review</option>
-                    <option value="Interview Scheduled">Interview Scheduled</option>
-                    <option value="Rejected">Rejected</option>
+        {activeTab === 'candidates' && (
+          <>
+            <div className="flex flex-col md:flex-row gap-5 mt-6">
+              <div className="relative flex-1">
+                <Search size={18} className="absolute top-3 left-3 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search candidates by name, position, or skills..."
+                  className="w-full border border-gray-500 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-none"
+                  value={searchTerm}
+                  onChange={(e) => set_SearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="relative">
+                <Funnel size={20} className="absolute top-3 left-3 text-gray-700" />
+                <select
+                  className="border border-gray-500 rounded-lg pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-none bg-white appearance-none cursor-pointer"
+                  value={filter}
+                  onChange={(e) => set_Filter(e.target.value)}
+                >
+                  {statusFilters.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
                 </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+              {filtered_Candidates.length > 0 ? (
+                filtered_Candidates.map((c, index) => {
+                  const statusColor = getStatusColors(c.status);
+                  return (
+                    <div key={index} className="bg-white rounded-xl shadow-sm cursor-pointer hover:shadow-2xl p-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-gray-800 text-[22px]"> {c.name} </h3>
+                          <p className="text-sm font-semibold text-gray-500"> {c.role} </p>
+                          <p className="text-xs text-gray-400 mt-1"> {c.email} </p>
+                        </div>
+                        <span className={`text-xs px-3 py-1 rounded-full font-bold ${statusColor.bg} ${statusColor.text}`}>
+                          {c.status}
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex justify-between font-semibold text-sm mb-1">
+                          <span> Match Score </span>
+                          <span> {c.score}% </span>
+                        </div>
+                        <div className="w-full bg-gray-300 h-2 rounded-full">
+                          <div
+                            className="bg-linear-to-r from-blue-700 to-purple-900 h-2 rounded-full"
+                            style={{ width: `${c.score}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      {c.skills && c.skills.length > 0 && c.skills[0] !== 'N/A' && (
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {c.skills.slice(0, 3).map((skill, i) => (
+                            <span key={i} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                              {skill}
+                            </span>
+                          ))}
+                          {c.skills.length > 3 && (
+                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                              +{c.skills.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex gap-3 mt-5">
+                        <button
+                          onClick={() => openModal(c)}
+                          className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 cursor-pointer text-sm text-center"
+                        >
+                          Schedule Interview
+                        </button>
+                        <button
+                          onClick={() => open_Ai_Model(c)}
+                          className="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition text-sm text-center cursor-pointer"
+                        >
+                          AI Analysis
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="col-span-full text-center text-xl font-bold underline text-red-600">No candidates found.</div>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'jobs' && (
+          <>
+            {selectedJobForCVs ? (
+              <div className="mt-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <button
+                    onClick={() => set_SelectedJobForCVs(null)}
+                    className="flex items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition cursor-pointer text-sm font-semibold"
+                  >
+                    &larr; Back to Jobs
+                  </button>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800 underline">
+                      {selectedJobForCVs.title}
+                    </h2>
+                    <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                      <span className="flex items-center gap-1"><MapPin size={14} /> {selectedJobForCVs.location}</span>
+                      <span className="flex items-center gap-1"><Briefcase size={14} /> {selectedJobForCVs.category}</span>
+                      <span className="flex items-center gap-1"><Clock size={14} /> {selectedJobForCVs.job_type}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {(() => {
+                  const jobApplications = applications.filter((app) => String(app.job_id) === String(selectedJobForCVs.id));
+                  if (jobApplications.length === 0) {
+                    return (
+                      <div className="text-center text-xl font-bold text-red-600 py-10">
+                        No candidates have applied to this job yet.
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {jobApplications.map((app) => {
+                        const candidateName = app.candidate?.name || app.name || 'Unknown';
+                        const candidateEmail = app.candidate?.email || app.email || 'N/A';
+                        const candidateResume = app.candidate?.resume_url || null;
+                        const statusLabel = getStatusLabel(app.status);
+                        const statusColor = getStatusColors(statusLabel);
+                        const score = app.ai_score || 0;
+                        return (
+                          <div key={app.id} className="bg-white rounded-xl shadow-sm hover:shadow-2xl p-6 transition">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h3 className="font-bold text-gray-800 text-lg">{candidateName}</h3>
+                                <p className="text-xs text-gray-400 mt-1">{candidateEmail}</p>
+                              </div>
+                              <span className={`text-xs px-3 py-1 rounded-full font-bold ${statusColor.bg} ${statusColor.text}`}>
+                                {statusLabel}
+                              </span>
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Briefcase size={14} className="text-blue-500" />
+                                <span className="font-semibold">{selectedJobForCVs.title}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                                <MapPin size={14} className="text-purple-500" />
+                                <span>{selectedJobForCVs.location}</span>
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <div className="flex justify-between font-semibold text-sm mb-1">
+                                <span>Match Score</span>
+                                <span>{score}%</span>
+                              </div>
+                              <div className="w-full bg-gray-300 h-2 rounded-full">
+                                <div
+                                  className="bg-linear-to-r from-blue-700 to-purple-900 h-2 rounded-full"
+                                  style={{ width: `${score}%` }}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mb-4">
+                              {candidateResume ? (
+                                <span className="flex items-center gap-1 text-xs text-green-600 font-semibold">
+                                  <FileCheck size={14} /> Resume Uploaded
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-orange-500 font-semibold">
+                                  <FileText size={14} /> No Resume
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              {candidateResume && (
+                                <a
+                                  href={`http://localhost:5000${candidateResume}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 text-sm font-semibold transition"
+                                >
+                                  <Eye size={14} /> View Resume
+                                </a>
+                              )}
+                              <button
+                                onClick={() => {
+                                  const mappedCandidate = {
+                                    id: app.id,
+                                    name: candidateName,
+                                    email: candidateEmail,
+                                    role: selectedJobForCVs.title,
+                                    score: score,
+                                    status: statusLabel,
+                                    skills: app.ai_analysis?.strengths || ['N/A'],
+                                    appliedDate: app.created_at || '',
+                                  };
+                                  set_selected_Candidate(mappedCandidate);
+                                  set_ShowModal(true);
+                                }}
+                                className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 text-sm text-center cursor-pointer transition"
+                              >
+                                Schedule
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const mappedCandidate = {
+                                    id: app.id,
+                                    name: candidateName,
+                                    email: candidateEmail,
+                                    role: selectedJobForCVs.title,
+                                    score: score,
+                                    status: statusLabel,
+                                    skills: app.ai_analysis?.strengths || ['N/A'],
+                                    appliedDate: app.created_at || '',
+                                  };
+                                  set_selected_Candidate(mappedCandidate);
+                                  set_Ai_Modal(true);
+                                }}
+                                className="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition text-sm text-center cursor-pointer"
+                              >
+                                AI Analysis
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mt-6">
+                  <div className="relative flex-1 max-w-md">
+                    <Search size={18} className="absolute top-3 left-3 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Search your jobs..."
+                      className="w-full border border-gray-500 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={searchTerm}
+                      onChange={(e) => set_SearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    onClick={() => set_ShowJobModal(true)}
+                    className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition cursor-pointer text-sm font-semibold"
+                  >
+                    <Plus size={18} /> Post New Job
+                  </button>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  {recruiterJobs
+                    .filter((j) => j.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map((job) => {
+                      const jobAppCount = applications.filter((app) => String(app.job_id) === String(job.id)).length;
+                      return (
+                        <div key={job.id} className="bg-white rounded-xl shadow-sm hover:shadow-md p-6 transition">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="font-bold text-gray-800 text-xl underline">{job.title}</h3>
+                              <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-2">
+                                <span className="flex items-center gap-1"><Briefcase size={14} /> {job.category}</span>
+                                <span className="flex items-center gap-1"><MapPin size={14} /> {job.location}</span>
+                                <span className="flex items-center gap-1"><Clock size={14} /> {job.job_type}</span>
+                                {job.salary_min && job.salary_max && (
+                                  <span className="flex items-center gap-1"><TrendingUp size={14} /> ${job.salary_min}k - ${job.salary_max}k</span>
+                                )}
+                              </div>
+                              <p className="text-gray-600 mt-3 text-sm line-clamp-2">{job.description}</p>
+                              {job.requirements && job.requirements.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {(Array.isArray(job.requirements) ? job.requirements : []).slice(0, 4).map((req, i) => (
+                                    <span key={i} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{req}</span>
+                                  ))}
+                                </div>
+                              )}
+                              <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
+                                <span>{jobAppCount} applicant{jobAppCount !== 1 ? 's' : ''}</span>
+                                <span>Posted {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'N/A'}</span>
+                                <span className={`px-2 py-0.5 rounded-full font-semibold ${job.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
+                                  {job.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 ml-4">
+                              <button
+                                onClick={() => set_SelectedJobForCVs(job)}
+                                className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer text-sm font-semibold"
+                              >
+                                <Eye size={14} /> View Applicants
+                              </button>
+                              <button
+                                onClick={() => handleDeleteJob(job.id, job.title)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                                title="Delete job"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {recruiterJobs.filter((j) => j.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                    <div className="text-center text-xl font-bold text-red-600 py-10">
+                      No jobs posted yet. Click "Post New Job" to get started.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {activeTab === 'interviews' && (
+          <>
+            <div className="relative mt-6 max-w-md">
+              <Search size={18} className="absolute top-3 left-3 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search interviews..."
+                className="w-full border border-gray-500 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => set_SearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {interviews
+                .filter((interview) => {
+                  const candidateName = interview.application?.candidate?.name || '';
+                  const jobTitle = interview.application?.job?.title || '';
+                  return (
+                    candidateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    jobTitle.toLowerCase().includes(searchTerm.toLowerCase())
+                  );
+                })
+                .map((interview) => (
+                  <div key={interview.id} className="bg-white rounded-xl shadow-sm hover:shadow-md p-6 transition">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-gray-800 text-lg">
+                          {interview.application?.candidate?.name || 'Unknown Candidate'}
+                        </h3>
+                        <p className="text-sm font-semibold text-gray-500">
+                          {interview.application?.job?.title || 'N/A'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {interview.application?.candidate?.email || ''}
+                        </p>
+                      </div>
+                      <span className={`text-xs px-3 py-1 rounded-full font-bold ${
+                        interview.status === 'scheduled' ? 'bg-green-200 text-green-600' :
+                        interview.status === 'completed' ? 'bg-blue-200 text-blue-600' :
+                        'bg-red-200 text-red-600'
+                      }`}>
+                        {interview.status}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-4">
+                      <span className="flex items-center gap-1"><Calendar size={14} /> {interview.date}</span>
+                      <span className="flex items-center gap-1"><Clock size={14} /> {interview.time}</span>
+                      <span className="flex items-center gap-1"><MapPin size={14} /> {interview.location}</span>
+                      <span className="flex items-center gap-1"><Brain size={14} /> {interview.type}</span>
+                    </div>
+                  </div>
+                ))}
+              {interviews.length === 0 && (
+                <div className="text-center text-xl font-bold text-red-600 py-10">
+                  No interviews scheduled yet.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {showModal && selected_Candidate && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md relative">
+              <button onClick={closeModal} className="absolute cursor-pointer top-3 right-3 text-gray-500">
+                <X size={20} />
+              </button>
+              <h2 className="text-xl font-bold mb-4 text-center">Schedule Interview for {selected_Candidate.name} </h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block font-semibold mb-1"> Date </label>
+                  <input type="date" className="w-full border rounded-lg px-3 py-2" required
+                    value={formData.date} onChange={(e) => set_FormData({ ...formData, date: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1"> Time </label>
+                  <input type="time" className="w-full border rounded-lg px-3 py-2" required
+                    value={formData.time} onChange={(e) => set_FormData({ ...formData, time: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1"> Location </label>
+                  <select className="w-full border rounded-lg px-3 py-2" required
+                    value={formData.location} onChange={(e) => set_FormData({ ...formData, location: e.target.value })}>
+                    <option value="">Select location</option>
+                    <option value="Google Meet">Google Meet</option>
+                    <option value="Zoom">Zoom</option>
+                    <option value="Microsoft Teams">Microsoft Teams</option>
+                    <option value="Office">Office</option>
+                    <option value="Phone">Phone</option>
+                  </select>
+                </div>
+                <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                  Schedule
+                </button>
+              </form>
             </div>
           </div>
+        )}
 
-          <div className='relative mb-6'>
-            <Search size={18} className='absolute top-3 left-3 text-gray-500' />
-            <input type="text" placeholder="Search candidates by name, position, or skills..."
-              className='w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none 
-              focus:ring-2 focus:ring-blue-500 focus:border-none'
-              value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCandidates.length > 0 ? filteredCandidates.map((candidate) => (
-              <div key={candidate.id} className="bg-blue-100 rounded-xl shadow-sm p-6 hover:shadow-lg transition">
-                <div className="flex justify-between items-start mb-4">
+        {showJobModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white rounded-xl p-6 w-full max-w-lg relative mt-40 mb-10">
+              <button onClick={() => set_ShowJobModal(false)} className="absolute cursor-pointer top-3 right-3 text-gray-500">
+                <X size={20} />
+              </button>
+              <h2 className="text-2xl font-bold mb-4 text-center underline">Post New Job</h2>
+              <form onSubmit={handleCreateJob} className="space-y-4">
+                <div>
+                  <label className="block font-semibold mb-1">Job Title *</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" required
+                    placeholder="e.g. Senior Frontend Developer"
+                    value={jobFormData.title} onChange={(e) => set_JobFormData({ ...jobFormData, title: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-bold text-gray-800 text-xl mb-1">{candidate.name}</h3>
-                    <p className="text-sm font-medium text-gray-600 mb-2">{candidate.role}</p>
-                    <span className={`inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full font-semibold ${getStatusColor(candidate.status)}`}>
-                      {candidate.status}
-                    </span>
+                    <label className="block font-semibold mb-1">Category *</label>
+                    <select className="w-full border rounded-lg px-3 py-2" required
+                      value={jobFormData.category} onChange={(e) => set_JobFormData({ ...jobFormData, category: e.target.value })}>
+                      <option value="Engineering">Engineering</option>
+                      <option value="IT Operations">IT Operations</option>
+                      <option value="Data">Data</option>
+                      <option value="Security">Security</option>
+                    </select>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">{candidate.score}%</div>
-                    <div className="text-xs text-gray-500">Match Score</div>
+                  <div>
+                    <label className="block font-semibold mb-1">Job Type *</label>
+                    <select className="w-full border rounded-lg px-3 py-2" required
+                      value={jobFormData.job_type} onChange={(e) => set_JobFormData({ ...jobFormData, job_type: e.target.value })}>
+                      <option value="Full-time">Full-time</option>
+                      <option value="Part-time">Part-time</option>
+                      <option value="Contract">Contract</option>
+                      <option value="Internship">Internship</option>
+                    </select>
                   </div>
                 </div>
-
-                <div className="mb-4">
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div className="bg-linear-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${candidate.score}%` }}></div>
+                <div>
+                  <label className="block font-semibold mb-1">Location *</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2" required
+                    placeholder="e.g. Remote, San Francisco, CA"
+                    value={jobFormData.location} onChange={(e) => set_JobFormData({ ...jobFormData, location: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-semibold mb-1">Min Salary</label>
+                    <input type="number" className="w-full border rounded-lg px-3 py-2" min="0"
+                      placeholder="e.g. 80"
+                      value={jobFormData.salary_min} onChange={(e) => set_JobFormData({ ...jobFormData, salary_min: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Max Salary</label>
+                    <input type="number" className="w-full border rounded-lg px-3 py-2" min="0"
+                      placeholder="e.g. 120"
+                      value={jobFormData.salary_max} onChange={(e) => set_JobFormData({ ...jobFormData, salary_max: e.target.value })} />
                   </div>
                 </div>
+                <div>
+                  <label className="block font-semibold mb-1">Description *</label>
+                  <textarea className="w-full border rounded-lg px-3 py-2" rows="4" required
+                    placeholder="Describe the role, responsibilities..."
+                    value={jobFormData.description} onChange={(e) => set_JobFormData({ ...jobFormData, description: e.target.value })} />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1"> Job Requirements *</label>
+                  <input type="text" className="w-full border rounded-lg px-3 py-2"
+                    placeholder="e.g. 3+ years React, TypeScript, Node.js"
+                    value={jobFormData.requirements} onChange={(e) => set_JobFormData({ ...jobFormData, requirements: e.target.value })} />
+                </div>
+                <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                  Post Job
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
-                <div className="mb-4">
-                  <p className="font-medium text-gray-700 mb-2">Key Skills:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {candidate.skills.slice(0, 3).map((skill, index) => (
-                      <span key={index} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+        {Ai_Modal && selected_Candidate && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white w-full max-w-2xl rounded-2xl p-8 mt-40 relative shadow-xl">
+              <button onClick={close_Ai_Model} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 cursor-pointer">
+                <X size={22} />
+              </button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-blue-700 text-white p-3 rounded-full"><Brain /></div>
+                <div>
+                  <h2 className="text-2xl font-bold underline"> AI Analysis </h2>
+                  <p className="text-gray-500"> {selected_Candidate.name} </p>
+                </div>
+              </div>
+              <div className="bg-gray-100 rounded-xl p-6 mb-6">
+                <h3 className="font-semibold mb-3"> Overall Match Score </h3>
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl font-bold text-blue-600">{selected_Candidate.score}%</span>
+                  <div className="flex-1 bg-gray-300 h-3 rounded-full">
+                    <div className="bg-linear-to-r from-blue-600 to-purple-600 h-3 rounded-full"
+                      style={{ width: `${selected_Candidate.score}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3"> Key Strengths </h3>
+                <ul className="space-y-2 text-gray-700">
+                  {selected_Candidate.skills &&
+                    selected_Candidate.skills.filter((s) => s !== 'N/A').slice(0, 4).map((skill, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-green-600 font-bold"><Check /></span>
+                        Strong expertise in {skill}
+                      </li>
+                    ))}
+                  {(!selected_Candidate.skills || selected_Candidate.skills.length === 0 || selected_Candidate.skills[0] === 'N/A') && (
+                    <li className="text-gray-500">No skill data available yet</li>
+                  )}
+                </ul>
+              </div>
+              <div className="bg-green-100 border border-green-300 rounded-xl p-5">
+                <h3 className="font-semibold mb-1">Recommendation</h3>
+                <p className="text-green-700 font-semibold">
+                  {selected_Candidate.score >= 80 ? 'Highly Recommended' :
+                   selected_Candidate.score >= 60 ? 'Recommended' : 'Needs Improvement'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {Analytics_Modal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white w-full max-w-2xl rounded-2xl p-8 mt-20 relative shadow-xl">
+              <button onClick={close_Analytics_Model} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 cursor-pointer">
+                <X size={22} />
+              </button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-purple-700 text-white p-3 rounded-full"><BarChart3 /></div>
+                <div>
+                  <h2 className="text-2xl font-bold underline">Recruitment Analytics</h2>
+                  <p className="text-gray-500">Overview of hiring pipeline performance</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500 font-semibold">Total Applications</p>
+                  <p className="text-3xl font-bold text-blue-600">{applications.length}</p>
+                </div>
+                <div className="bg-green-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500 font-semibold">Interviews Scheduled</p>
+                  <p className="text-3xl font-bold text-green-600">{interviews.length}</p>
+                </div>
+                <div className="bg-purple-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500 font-semibold">Avg Match Score</p>
+                  <p className="text-3xl font-bold text-purple-600">{avgScore}%</p>
+                </div>
+                <div className="bg-orange-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500 font-semibold">Open Positions</p>
+                  <p className="text-3xl font-bold text-orange-600">{jobs.length}</p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Pipeline Breakdown</h3>
+                <div className="space-y-3">
+                  {statusFilters.slice(1).map((status) => {
+                    const count = candidatesData.filter((c) => c.status === status).length;
+                    const percentage = candidatesData.length > 0 ? Math.round((count / candidatesData.length) * 100) : 0;
+                    const statusColor = getStatusColors(status);
+                    return (
+                      <div key={status}>
+                        <div className="flex justify-between text-sm font-semibold mb-1">
+                          <span>{status}</span>
+                          <span>{count} ({percentage}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 h-2 rounded-full">
+                          <div className={`h-2 rounded-full ${statusColor.bg.replace('200', '500')}`}
+                            style={{ width: `${percentage}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-5">
+                <h3 className="font-semibold mb-1">Top Skills in Pipeline</h3>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {[...new Set(candidatesData.flatMap((c) => c.skills || []).filter((s) => s !== 'N/A'))]
+                    .slice(0, 8)
+                    .map((skill, i) => (
+                      <span key={i} className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-medium">
                         {skill}
                       </span>
                     ))}
-                    {candidate.skills.length > 3 && (
-                      <span className="text-xs text-gray-500">+{candidate.skills.length - 3} more</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-500 mb-4 space-y-1">
-                  <p> {candidate.email}</p>
-                  <p> {candidate.location}</p>
-                  <p> {candidate.experience}</p>
-                  <p> Applied: {candidate.appliedDate}</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openModal(candidate)}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                  >
-                    Schedule Interview
-                  </button>
-                  <button
-                    onClick={() => openAiModal(candidate)}
-                    className="flex-1 border border-blue-600 text-blue-600 py-2 rounded-lg hover:bg-blue-700 hover:text-white transition text-sm font-medium"
-                  >
-                    AI Analysis
-                  </button>
                 </div>
               </div>
-            )) : (
-              <div className="col-span-full text-center py-12">
-                <div className="text-gray-400 mb-4">
-                  <Users size={48} className="mx-auto" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No candidates found</h3>
-                <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {showModal && selectedCandidate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Schedule Interview</h2>
-              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="mb-4">
-              <h3 className="font-semibold text-gray-800">{selectedCandidate.name}</h3>
-              <p className="text-sm text-gray-600">{selectedCandidate.role}</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Date</label>
-                <input
-                  type="date"
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Time</label>
-                <input
-                  type="time"
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Interviewer</label>
-                <input
-                  type="text"
-                  placeholder="Enter interviewer name"
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.interviewer}
-                  onChange={(e) => setFormData({ ...formData, interviewer: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Location</label>
-                <select
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                >
-                  <option value="">Select location</option>
-                  <option value="Google Meet">Google Meet</option>
-                  <option value="Zoom">Zoom</option>
-                  <option value="Microsoft Teams">Microsoft Teams</option>
-                  <option value="Office">Office</option>
-                  <option value="Phone">Phone</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium"
-              >
-                Schedule Interview
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-      
-      {aiModal && selectedCandidate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-2xl rounded-xl shadow-xl">
-            <div className="flex justify-between items-center p-6 border-b">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Brain className="text-blue-600" size={24} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">AI Analysis</h2>
-                  <p className="text-gray-600">{selectedCandidate.name}</p>
-                </div>
-              </div>
-              <button onClick={closeAiModal} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="bg-gray-50 rounded-xl p-6 mb-6">
-                <h3 className="font-semibold mb-3">Overall Match Score</h3>
-                <div className="flex items-center gap-4">
-                  <span className="text-4xl font-bold text-blue-600">{selectedCandidate.score}%</span>
-                  <div className="flex-1 bg-gray-200 h-3 rounded-full">
-                    <div className="bg-linear-to-r from-blue-500 to-purple-600 h-3 rounded-full" style={{ width: `${selectedCandidate.score}%` }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Key Strengths</h3>
-                <ul className="space-y-2">
-                  {selectedCandidate.skills.slice(0, 4).map((skill, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className="text-green-600 mt-0.5" size={16} />
-                      <span className="text-gray-700">Strong expertise in {skill}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Development Areas</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 font-bold">•</span>
-                    Could benefit from additional enterprise-level experience
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 font-bold">•</span>
-                    Limited exposure to large-scale distributed systems
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <h3 className="font-semibold mb-1 text-green-800">Recommendation</h3>
-                <p className="text-green-700 font-medium">Highly Recommended for {selectedCandidate.role} position</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {analyticsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Recruitment Analytics</h2>
-              <button onClick={closeAnalyticsModal} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-blue-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-blue-800 mb-2">Application Trends</h3>
-                <div className="text-3xl font-bold text-blue-600 mb-2">+24%</div>
-                <p className="text-sm text-blue-700">Increase in applications this month</p>
-              </div>
-              
-              <div className="bg-green-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-green-800 mb-2">Interview Success Rate</h3>
-                <div className="text-3xl font-bold text-green-600 mb-2">78%</div>
-                <p className="text-sm text-green-700">Candidates proceeding to next round</p>
-              </div>
-              
-              <div className="bg-purple-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-purple-800 mb-2">Time to Hire</h3>
-                <div className="text-3xl font-bold text-purple-600 mb-2">18 days</div>
-                <p className="text-sm text-purple-700">Average time from application to offer</p>
-              </div>
-              
-                <div className="bg-orange-50 p-6 rounded-xl">
-                    <h3 className="font-semibold text-orange-800 mb-2">Top Skills</h3>
-                    <div className="space-y-2">
-                    <div className="flex justify-between">
-                        <span className="text-sm">React</span>
-                        <span className="text-sm font-semibold">85%</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                        <span className="text-sm">Python</span>
-                        <span className="text-sm font-semibold">72%</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                        <span className="text-sm">AWS</span>
-                        <span className="text-sm font-semibold">68%</span>
-                    </div>
-                    </div>
-                </div>
-
-              <div className="bg-red-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-red-800 mb-2">Rejection Rate</h3>
-                <div className="text-3xl font-bold text-red-600 mb-2">32%</div>
-                <p className="text-sm text-red-700">Applications not meeting criteria</p>
-              </div>
-
-              <div className="bg-indigo-50 p-6 rounded-xl">
-                <h3 className="font-semibold text-indigo-800 mb-2">Diversity Score</h3>
-                <div className="text-3xl font-bold text-indigo-600 mb-2">8.5/10</div>
-                <p className="text-sm text-indigo-700">Candidate pool diversity rating</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

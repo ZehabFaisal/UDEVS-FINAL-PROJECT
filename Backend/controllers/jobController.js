@@ -1,258 +1,169 @@
-import { Job, User, Application } from '../models/index.js';
-import { Op } from 'sequelize';
+const { Op } = require("sequelize");
+const { Job, Application, User } = require("../models");
 
-export const createJob = async (req, res) => {
+exports.getAllJobs = async (req, res) => {
   try {
-    const {
-      title,
-      company,
-      location,
-      job_type,
-      salary_min,
-      salary_max,
-      description,
-      requirements,
-      benefits,
-      skills,
-      category,
-    } = req.body;
+    const { search, category, job_type, location, page = 1, limit = 10 } = req.query;
 
-    if (!title || !company || !location || !job_type || !description) {
-      return res.status(400).json({
-        success: false,
-        message: 'Required fields: title, company, location, job_type, description',
-      });
+    const where = { status: "active" };
+
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+        { category: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+    if (category) where.category = category;
+    if (job_type) where.job_type = job_type;
+    if (location) where.location = { [Op.iLike]: `%${location}%` };
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const { rows: jobs, count } = await Job.findAndCountAll({
+      where,
+      include: [
+        { model: User, as: "recruiter", attributes: ["id", "name", "email"] },
+        { model: Application, as: "applications", attributes: ["id"] },
+      ],
+      order: [["created_at", "DESC"]],
+      limit: parseInt(limit),
+      offset,
+    });
+
+    const result = jobs.map((job) => ({
+      ...job.toJSON(),
+      applications_count: job.applications.length,
+      applications: undefined,
+    }));
+
+    res.json({
+      success: true,
+      jobs: result,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        pages: Math.ceil(count / parseInt(limit)),
+      },
+    });
+  } catch (error) {
+    console.error("Get jobs error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.getJobById = async (req, res) => {
+  try {
+    const job = await Job.findByPk(req.params.id, {
+      include: [
+        { model: User, as: "recruiter", attributes: ["id", "name", "email"] },
+        {
+          model: Application,
+          as: "applications",
+          include: [
+            { model: User, as: "candidate", attributes: ["id", "name", "email"] },
+          ],
+        },
+      ],
+    });
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Error! Job does not found" });
     }
 
+    res.json({ success: true, job });
+  } catch (error) {
+    console.error("Get job error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.createJob = async (req, res) => {
+  try {
+    const { title, category, location, job_type, salary_min, salary_max, description, requirements } =
+      req.body;
+
     const job = await Job.create({
+      recruiter_id: req.user.id,
       title,
-      company,
+      category,
       location,
       job_type,
       salary_min,
       salary_max,
       description,
       requirements: requirements || [],
-      benefits: benefits || [],
-      skills: skills || [],
-      category,
-      posted_by: req.user.id,
-      status: 'draft',
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Job created successfully',
-      job,
-    });
+    res.status(201).json({ 
+      success: true, message: "Job is created successfully....", job
+     });
   } catch (error) {
-    console.error('Create job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating job',
-      error: error.message,
-    });
+    console.error("Create job error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const updateJob = async (req, res) => {
+exports.updateJob = async (req, res) => {
   try {
-    const { jobId } = req.params;
-    const job = await Job.findByPk(jobId);
-
+    const job = await Job.findByPk(req.params.id);
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found',
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found" });
     }
 
-    if (job.posted_by !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to update this job',
-      });
+    if (job.recruiter_id !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
-    await job.update(req.body);
+    const allowed = [
+      "title",
+      "category",
+      "location",
+      "job_type",
+      "salary_min",
+      "salary_max",
+      "description",
+      "requirements",
+      "status",
+    ];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
 
-    res.status(200).json({
-      success: true,
-      message: 'Job updated successfully',
-      job,
-    });
+    await job.update(updates);
+
+    res.json({ success: true, message: "Job updated", job });
   } catch (error) {
-    console.error('Update job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating job',
-      error: error.message,
-    });
+    console.error("Update job error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const getJobById = async (req, res) => {
+exports.deleteJob = async (req, res) => {
   try {
-    const { jobId } = req.params;
-    const job = await Job.findByPk(jobId, {
-      include: [
-        {
-          model: User,
-          as: 'recruiter',
-          attributes: ['id', 'name', 'email', 'company', 'profile_image'],
-        },
-        {
-          model: Application,
-          as: 'applications',
-          attributes: ['id', 'status', 'created_at'],
-          required: false,
-        },
-      ],
-    });
-
+    const job = await Job.findByPk(req.params.id);
     if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found',
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      job,
-    });
-  } catch (error) {
-    console.error('Get job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching job',
-      error: error.message,
-    });
-  }
-};
-
-export const getAllJobs = async (req, res) => {
-  try {
-    const { search, location, job_type, status = 'active', page = 1, limit = 10 } = req.query;
-
-    const where = {};
-    if (status) where.status = status;
-    if (search) {
-      where[Op.or] = [
-        { title: { [Op.iLike]: `%${search}%` } },
-        { company: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } },
-      ];
-    }
-    if (location) where.location = { [Op.iLike]: `%${location}%` };
-    if (job_type) where.job_type = job_type;
-
-    const offset = (page - 1) * limit;
-
-    const { rows, count } = await Job.findAndCountAll({
-      where,
-      include: [
-        {
-          model: User,
-          as: 'recruiter',
-          attributes: ['id', 'name', 'email', 'company', 'profile_image'],
-        },
-      ],
-      order: [['created_at', 'DESC']],
-      offset,
-      limit: parseInt(limit),
-    });
-
-    res.status(200).json({
-      success: true,
-      jobs: rows,
-      pagination: {
-        total: count,
-        pages: Math.ceil(count / limit),
-        currentPage: parseInt(page),
-        limit: parseInt(limit),
-      },
-    });
-  } catch (error) {
-    console.error('Get jobs error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching jobs',
-      error: error.message,
-    });
-  }
-};
-
-export const getRecruiterJobs = async (req, res) => {
-  try {
-    const { page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
-
-    const { rows, count } = await Job.findAndCountAll({
-      where: { posted_by: req.user.id },
-      include: [
-        {
-          model: Application,
-          as: 'applications',
-          attributes: ['id', 'status', 'created_at'],
-        },
-      ],
-      order: [['created_at', 'DESC']],
-      offset,
-      limit: parseInt(limit),
-    });
-
-    res.status(200).json({
-      success: true,
-      jobs: rows,
-      pagination: {
-        total: count,
-        pages: Math.ceil(count / limit),
-        currentPage: parseInt(page),
-        limit: parseInt(limit),
-      },
-    });
-  } catch (error) {
-    console.error('Get recruiter jobs error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching recruiter jobs',
-      error: error.message,
-    });
-  }
-};
-
-export const deleteJob = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-    const job = await Job.findByPk(jobId);
-
-    if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found',
-      });
-    }
-
-    if (job.posted_by !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to delete this job',
-      });
+    if (job.recruiter_id !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
     await job.destroy();
 
-    res.status(200).json({
-      success: true,
-      message: 'Job deleted successfully',
-    });
+    res.json({ success: true, message: "Job deleted" });
   } catch (error) {
-    console.error('Delete job error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting job',
-      error: error.message,
-    });
+    console.error("Delete job error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

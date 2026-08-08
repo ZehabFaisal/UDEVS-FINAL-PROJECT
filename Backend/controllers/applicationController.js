@@ -1,195 +1,141 @@
-import { Application, Job, User } from '../models/index.js';
-import { Op } from 'sequelize';
+const { Application, Job, User, Interview } = require("../models");
 
-export const submitApplication = async (req, res) => {
+exports.getApplications = async (req, res) => {
   try {
-    const { jobId } = req.params;
-    const { cover_letter, resume_url } = req.body;
-    const job = await Job.findByPk(jobId);
-    if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: 'Job not found',
+    const { role, id: userId } = req.user;
+    const where = {};
+
+    if (role === "candidate") {
+      where.candidate_id = userId;
+    } else if (role === "recruiter") {
+      const recruiterJobs = await Job.findAll({
+        where: { recruiter_id: userId },
+        attributes: ["id"],
       });
+      where.job_id = recruiterJobs.map((j) => j.id);
     }
 
-    if (job.status !== 'active') {
-      return res.status(400).json({
-        success: false,
-        message: 'This job is not accepting applications',
-      });
-    }
-    const existingApplication = await Application.findOne({
-      where: {
-        job_id: jobId,
-        candidate_id: req.user.id,
-      },
+    const applications = await Application.findAll({
+      where,
+      include: [
+        { model: User, as: "candidate", attributes: ["id", "name", "email", "resume_url"] },
+        {
+          model: Job,
+          as: "job",
+          attributes: ["id", "title", "category", "location", "job_type"],
+        },
+        { model: Interview, as: "interview" },
+      ],
+      order: [["created_at", "DESC"]],
     });
 
-    if (existingApplication) {
-      return res.status(409).json({
+    const result = applications.map((app) => {
+      const plain = app.toJSON();
+      plain.name = plain.candidate?.name || "";
+      plain.role = plain.job?.title || "";
+      return plain;
+    });
+
+    res.json({ success: true, applications: result });
+  } catch (error) {
+    console.error("Get applications error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.submitApplication = async (req, res) => {
+  try {
+    const { job_id } = req.body;
+
+    const job = await Job.findByPk(job_id);
+    if (!job) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found" });
+    }
+
+    const existing = await Application.findOne({
+      where: { candidate_id: req.user.id, job_id },
+    });
+    if (existing) {
+      return res.status(400).json({
         success: false,
-        message: 'You have already applied for this job',
+        message: "You have already applied to this job",
       });
     }
 
     const application = await Application.create({
-      job_id: jobId,
       candidate_id: req.user.id,
-      cover_letter,
-      resume_url,
-      status: 'submitted',
+      job_id,
+      status: "new",
     });
 
-    await job.increment('application_count');
-
-    res.status(201).json({
-      success: true,
-      message: 'Application is submitted successfully',
-      application,
-    });
+    res.status(201).json({ success: true, message: "Application submitted", application });
   } 
   catch (error) {
-    console.error('Submit application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error submitting application',
-      error: error.message,
-    });
+    console.error("Submit application error occurred:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const getApplicationById = async (req, res) => {
+exports.updateApplicationStatus = async (req, res) => {
   try {
-    const { applicationId } = req.params;
-
-    const application = await Application.findByPk(applicationId, {
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['id', 'title', 'company', 'location'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['id', 'name', 'email', 'phone', 'profile_image'],
-        },
-      ],
+    const { status } = req.body;
+    const application = await Application.findByPk(req.params.id, {
+      include: [{ model: Job, as: "job", attributes: ["recruiter_id"] }],
     });
 
     if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found',
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
     }
 
-    res.status(200).json({
+    if (
+      application.job.recruiter_id !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    await application.update({ status });
+
+    res.json({
       success: true,
+      message: "Application status updated",
       application,
     });
   } catch (error) {
-    console.error('Get application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching application',
-      error: error.message,
-    });
+    console.error("Update application error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const getCandidateApplications = async (req, res) => {
+exports.deleteApplication = async (req, res) => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
-
-    const where = { candidate_id: req.user.id };
-    if (status) where.status = status;
-
-    const { rows, count } = await Application.findAndCountAll({
-      where,
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['id', 'title', 'company', 'location', 'job_type', 'salary_min', 'salary_max'],
-        },
-      ],
-      order: [['created_at', 'DESC']],
-      offset,
-      limit: parseInt(limit),
-    });
-
-    res.status(200).json({
-      success: true,
-      applications: rows,
-      pagination: {
-        total: count,
-        pages: Math.ceil(count / limit),
-        currentPage: parseInt(page),
-        limit: parseInt(limit),
-      },
-    });
-  } catch (error) {
-    console.error('Get candidate applications error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching applications',
-      error: error.message,
-    });
-  }
-};
-
-export const updateApplicationStatus = async (req, res) => {
-  try {
-    const { applicationId } = req.params;
-    const { status, rejection_reason, rating, feedback } = req.body;
-
-    const application = await Application.findByPk(applicationId, {
-      include: [{ model: Job, as: 'job', attributes: ['posted_by'] }],
-    });
-
+    const application = await Application.findByPk(req.params.id);
     if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application not found',
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
     }
 
-    if (application.job.posted_by !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized to update this application',
-      });
+    if (
+      application.candidate_id !== req.user.id &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
-    const validStatuses = ['submitted', 'reviewing', 'shortlisted', 'rejected', 'accepted'];
-    if (status && !validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
-      });
-    }
+    await application.destroy();
 
-    await application.update({
-      status,
-      rejection_reason,
-      rating,
-      feedback,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Application updated successfully',
-      application,
-    });
+    res.json({ success: true, message: "Application deleted" });
   } catch (error) {
-    console.error('Update application error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating application',
-      error: error.message,
-    });
+    console.error("Delete application error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

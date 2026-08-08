@@ -1,80 +1,63 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import morgan from 'morgan';
-import sequelize, { testConnection } from './config/database.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import authRoutes from './routes/authRoutes.js';
-import jobRoutes from './routes/jobRoutes.js';
-import applicationRoutes from './routes/applicationRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import './models/index.js';
-dotenv.config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
+
+const sequelize = require("./config/db");
+require("./models");
+
+const authRoutes = require("./routes/authRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const applicationRoutes = require("./routes/applicationRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
+app.use(cors({ 
+  origin: "http://localhost:5173", 
+  credentials: true 
 }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-  });
+app.use("/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/interviews", interviewRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/resume", resumeRoutes);
+
+app.get("/", (req, res) => {
+  res.json({ success: true, message: "Recruiter-AI API is running" });
 });
 
-app.use('/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/users', userRoutes);
-
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Recruiter-AI API Server',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      jobs: '/api/jobs',
-      applications: '/api/applications',
-      users: '/api/users',
-    },
-  });
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, message: "Recruiter-AI API is running", timestamp: new Date().toISOString() });
 });
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Error! The endpoint is not found',
-    path: req.originalUrl,
-  });
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ success: false, message: "Internal server error" });
 });
 
-app.use(errorHandler);
-
-const startServer = async () => {
+const start = async () => {
   try {
-    await testConnection();
-    await sequelize.sync({ alter: false });
-    console.log('Database synchronized');
+    await sequelize.authenticate();
+    console.log("Database connected");
+    await sequelize.sync({ force: false });
+    console.log("Models synchronized");
 
     app.listen(PORT, () => {
-      console.log(`\nServer is successfully running on http://localhost:${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`CORS enabled for: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}\n`);
+      console.log(`Congrats! Server is running on http://localhost:${PORT}`);
     });
-  } catch (error) {
-    console.error('Error! Failed to start server:', error.message);
+  } 
+  catch (error) {
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
 
-startServer();
-export default app;
+start();

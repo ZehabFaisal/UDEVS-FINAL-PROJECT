@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
-import sequelize from '../config/database.js';
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 const User = sequelize.define(
-  'User',
+  "User",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,78 +13,52 @@ const User = sequelize.define(
     name: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      validate: {
-        len: [2, 100],
-      },
     },
     email: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
-      validate: {
-        isEmail: true,
-      },
+      validate: { isEmail: true },
     },
     password_hash: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
     role: {
-      type: DataTypes.ENUM('admin', 'recruiter', 'candidate'),
+      type: DataTypes.ENUM("candidate", "recruiter", "admin"),
       allowNull: false,
-      defaultValue: 'candidate',
+      defaultValue: "candidate",
     },
-    profile_image: {
-      type: DataTypes.STRING,
+    resume_url: {
+      type: DataTypes.STRING(500),
       allowNull: true,
-    },
-    bio: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    company: {
-      type: DataTypes.STRING(150),
-      allowNull: true,
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-    },
-    is_verified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
     },
   },
   {
-    tableName: 'users',
-    timestamps: false,
+    tableName: "users",
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password_hash) {
+          user.password_hash = await bcrypt.hash(user.password_hash, 10);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed("password_hash")) {
+          user.password_hash = await bcrypt.hash(user.password_hash, 10);
+        }
+      },
+    },
   }
 );
 
-// Hash password before saving
-User.beforeCreate(async (user) => {
-  const salt = await bcrypt.genSalt(10);
-  user.password_hash = await bcrypt.hash(user.password_hash, salt);
-});
-
-User.beforeUpdate(async (user) => {
-  if (user.changed('password_hash')) {
-    const salt = await bcrypt.genSalt(10);
-    user.password_hash = await bcrypt.hash(user.password_hash, salt);
-  }
-});
-
-// Method to compare passwords
-User.prototype.comparePassword = async function (password) {
-  return await bcrypt.compare(password, this.password_hash);
+User.prototype.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password_hash);
 };
 
-export default User;
+User.prototype.toJSON = function () {
+  const values = Object.assign({}, this.get());
+  delete values.password_hash;
+  return values;
+};
+
+module.exports = User;

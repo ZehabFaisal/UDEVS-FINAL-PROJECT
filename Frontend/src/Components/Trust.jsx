@@ -11,10 +11,10 @@ const Trust = () => {
         <div className='max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10
             text-center text-white'>
             {
-                Trust_data.map((t, index) => (
+                Trust_data.map((trust, index) => (
                     <div key={index} className='flex flex-col items-center'>
-                        <p className='text-5xl font-extrabold mb-2'> {t.value} </p>
-                        <p className='text-md font-medium opacity-80'> {t.label} </p>
+                        <p className='text-5xl font-extrabold mb-2'> {trust.value} </p>
+                        <p className='text-md font-medium opacity-80'> {trust.label} </p>
                     </div>
                 ))
             }
@@ -22,5 +22,4 @@ const Trust = () => {
     </section>
   )
 }
-
 export default Trust;

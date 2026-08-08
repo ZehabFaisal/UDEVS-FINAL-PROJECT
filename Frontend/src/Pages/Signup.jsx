@@ -1,55 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
-import { registerUser } from '../services/api';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser, clearError } from '../store/slices/authSlice';
 
 const Signup = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
     role: 'candidate',
+    company: '',
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      switch (user.role) {
+        case 'candidate': navigate('/candidate-dashboard'); break;
+        case 'recruiter': navigate('/recruiter-dashboard'); break;
+        case 'admin': navigate('/admin-dashboard'); break;
+        default: navigate('/');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  useEffect(() => {
+    return () => { dispatch(clearError()); };
+  }, [dispatch]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const Handle_Submit = async (e) => {
+  const Handle_Submit = (e) => {
     e.preventDefault();
-    setError("");
+    setLocalError('');
+
     if (formData.password !== formData.confirmPassword) {
-      setError("Error! Passwords do not match");
+      setLocalError('Passwords do not match');
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const existingUser = users.find((u) => u.email.toLowerCase() === formData.email.toLowerCase());
-    if (existingUser) {
-      alert("This email already exists.");
+    if (formData.role === 'recruiter' && !formData.company.trim()) {
+      setLocalError('Company name is required for recruiters');
       return;
     }
 
-    const newUser = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      role: formData.role,
-    };
-
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Congratulations! Account created successfully.");
-    navigate("/login");
+    const submitData = { ...formData };
+    delete submitData.confirmPassword;
+    dispatch(signupUser(submitData));
   };
+
+  const displayError = localError || error;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-blue-300">
@@ -59,13 +67,12 @@ const Signup = () => {
         </div>
         <h2 className="text-3xl font-bold text-center underline"> Create Your Account </h2>
         <p className="text-center text-gray-500"> Start your recruitment journey with Recruiter-AI! </p>
-        {
-          error && (
-            <div className="bg-red-100 text-red-700 text-sm px-3 py-2 rounded">
-              {error}
-            </div>
-          )
-        }
+
+        {displayError && (
+          <div className="bg-red-100 text-red-700 text-sm px-3 py-2 rounded">
+            {displayError}
+          </div>
+        )}
 
         <form className="space-y-4" onSubmit={Handle_Submit}>
           <div>
@@ -144,16 +151,32 @@ const Signup = () => {
               >
                 <option value="candidate"> Candidate </option>
                 <option value="recruiter"> Recruiter </option>
-                <option value="admin"> Admin </option>
               </select>
             </div>
           </div>
 
+          {formData.role === 'recruiter' && (
+            <div>
+              <label className="text-sm mb-1 block"> Company Name </label>
+              <div className="flex border items-center px-3 py-2 rounded">
+                <FaUser className="text-blue-600 mr-2" />
+                <input
+                  type="text"
+                  name="company"
+                  placeholder="Enter your company name"
+                  className="outline-none w-full"
+                  value={formData.company}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
-            className="w-40 ml-28 mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4
-            py-2 rounded-3xl cursor-pointer font-bold hover:font-extrabold disabled:opacity-60"
+            className="w-40 ml-28 mt-4 bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-3xl cursor-pointer font-bold hover:font-extrabold disabled:opacity-60"
           >
             {loading ? 'Creating...' : 'Create Account'}
           </button>

@@ -1,29 +1,25 @@
-import User from './User.js';
-import Job from './Job.js';
-import Application from './Application.js';
-import SavedJob from './SavedJob.js';
+const User = require("./User");
+const RecruiterProfile = require("./RecruiterProfile");
+const Job = require("./Job");
+const Application = require("./Application");
+const Interview = require("./Interview");
 
-User.hasMany(Job, { foreignKey: 'posted_by', as: 'postedJobs' });
-Job.belongsTo(User, { foreignKey: 'posted_by', as: 'recruiter' });
+User.hasOne(RecruiterProfile, { foreignKey: "user_id", as: "recruiterProfile" });
+RecruiterProfile.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
-User.hasMany(Application, { foreignKey: 'candidate_id', as: 'applications' });
-Application.belongsTo(User, { foreignKey: 'candidate_id', as: 'candidate' });
+User.hasMany(Job, { foreignKey: "recruiter_id", as: "jobs" });
+Job.belongsTo(User, { foreignKey: "recruiter_id", as: "recruiter" });
 
-Job.hasMany(Application, { foreignKey: 'job_id', as: 'applications' });
-Application.belongsTo(Job, { foreignKey: 'job_id', as: 'job' });
+User.hasMany(Application, { foreignKey: "candidate_id", as: "applications" });
+Application.belongsTo(User, { foreignKey: "candidate_id", as: "candidate" });
 
-User.belongsToMany(Job, {
-  through: SavedJob,
-  foreignKey: 'user_id',
-  otherKey: 'job_id',
-  as: 'savedJobs',
-});
+Job.hasMany(Application, { foreignKey: "job_id", as: "applications" });
+Application.belongsTo(Job, { foreignKey: "job_id", as: "job" });
 
-Job.belongsToMany(User, {
-  through: SavedJob,
-  foreignKey: 'job_id',
-  otherKey: 'user_id',
-  as: 'savedBy',
-});
+Application.hasOne(Interview, { foreignKey: "application_id", as: "interview" });
+Interview.belongsTo(Application, { foreignKey: "application_id", as: "application" });
 
-export { User, Job, Application, SavedJob };
+User.hasMany(Interview, { foreignKey: "interviewer_id", as: "interviews" });
+Interview.belongsTo(User, { foreignKey: "interviewer_id", as: "interviewer" });
+
+module.exports = { User, RecruiterProfile, Job, Application, Interview };

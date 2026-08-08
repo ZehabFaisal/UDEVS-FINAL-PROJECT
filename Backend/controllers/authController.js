@@ -1,173 +1,105 @@
-import jwt from 'jsonwebtoken';
-import { User } from '../models/index.js';
+const jwt = require("jsonwebtoken");
+const { User, RecruiterProfile } = require("../models");
 
 const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE || '7d' }
-  );
+  return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 };
 
-export const signup = async (req, res) => {
+exports.register = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, role } = req.body;
-
-    // Validation
-    if (!name || !email || !password || !confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required',
-      });
+    const { name, email, password, role, company } = req.body;
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already registered" });
     }
 
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'Passwords do not match',
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must be at least 6 characters',
-      });
-    }
-
-    const userRole = role && ['admin', 'recruiter', 'candidate'].includes(role) ? role : 'candidate';
-
-    // Create user
     const user = await User.create({
       name,
       email,
       password_hash: password,
-      role: userRole,
+      role: role || "candidate",
     });
+
+    if (role === "recruiter") {
+      if (!company) {
+        return res.status(400).json({
+          success: false,
+          message: "Company name is required for recruiters",
+        });
+      }
+      await RecruiterProfile.create({
+        user_id: user.id,
+        company,
+        status: "pending",
+      });
+    }
 
     const token = generateToken(user);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "Registration successful",
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: user.toJSON(),
     });
   } catch (error) {
-    console.error('Signup error:', error);
-
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({
-        success: false,
-        message: 'Email already registered',
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Error during registration',
-      error: error.message,
-    });
+    console.error("Register error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const login = async (req, res) => {
+exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required',
-      });
-    }
+    const { email, password, role } = req.body;
 
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
     }
 
-    const isPasswordValid = await user.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
+    }
 
-    if (!isPasswordValid) {
-      return res.status(401).json({
+    if (role && user.role !== role) {
+      return res.status(403).json({
         success: false,
-        message: 'Invalid email or password',
+        message: `This account is registered as '${user.role}', not '${role}'`,
       });
     }
 
     const token = generateToken(user);
 
-    res.status(200).json({
+    res.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profile_image: user.profile_image,
-      },
+      user: user.toJSON(),
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error during login',
-      error: error.message,
-    });
+  } 
+  catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const verifyToken = async (req, res) => {
+exports.verify = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    res.status(200).json({
+    res.json({
       success: true,
-      message: 'Token verified',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profile_image: user.profile_image,
-      },
+      user: req.user.toJSON(),
     });
   } catch (error) {
-    console.error('Verify token error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error verifying token',
-      error: error.message,
-    });
+    console.error("Verify error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
-};
-
-export const logout = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Logged out successfully',
-  });
 };

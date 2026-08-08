@@ -1,74 +1,37 @@
-import jwt from 'jsonwebtoken';
+const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 
-export const authenticate = (req, res, next) => {
+const auth = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No authorization token is provided',
-      });
+    const header = req.headers.authorization;
+    if (!header || !header.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No token provided" });
     }
 
+    const token = header.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User no longer exists" });
+    }
+
+    req.user = user;
     next();
   } 
   catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'You have provided an invalid or expired token',
-      error: error.message,
-    });
-  }
-};
-
-export const authorize = (...allowedRoles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not authenticated',
-      });
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ success: false, message: "Invalid token" });
     }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `Only ${allowedRoles.join(', ')} can access this resource`,
-      });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ success: false, message: "Token has been expired" });
     }
-
-    next();
-  };
-};
-
-export const isCandidate = (req, res, next) => {
-  if (req.user?.role !== 'candidate') {
-    return res.status(403).json({
-      success: false,
-      message: 'Only candidates can perform this action',
-    });
+    return res.status(500).json({ success: false, message: "Error! Authentication is being failed..." });
   }
-  next();
 };
 
-export const isRecruiter = (req, res, next) => {
-  if (!['recruiter', 'admin'].includes(req.user?.role)) {
-    return res.status(403).json({
-      success: false,
-      message: 'Only recruiters can perform this action',
-    });
-  }
-  next();
-};
-
-export const isAdmin = (req, res, next) => {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Only admins can perform this action',
-    });
-  }
-  next();
-};
+module.exports = auth;
